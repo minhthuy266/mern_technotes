@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const Note = require("../models/Note");
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
 
 // @desc Get all notes
 // @route GET /notes
@@ -71,7 +70,7 @@ const updateNote = asyncHandler(async (req, res) => {
 
   // Confirm note exists to update
 
-  const note = await User.findById(id).exec();
+  const note = await Note.findById(id).exec();
 
   if (!note) {
     return res.status(400).json({ message: "Note not found" });
@@ -90,10 +89,10 @@ const updateNote = asyncHandler(async (req, res) => {
     return res.status(409).json({ message: "Duplicate note title" });
   }
 
-  user.user = user;
-  user.title = title;
-  user.text = text;
-  user.completed = completed;
+  note.user = user;
+  note.title = title;
+  note.text = text;
+  note.completed = completed;
 
   const updatedNote = await note.save();
 
