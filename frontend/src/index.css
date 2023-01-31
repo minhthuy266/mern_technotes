@@ -22,6 +22,7 @@
   --STATUS-OPEN: firebrick;
   --TABLE-BGCOLOR: #fff;
   --TABLE-COLOR: #000;
+  --INPUT-INVALID: #f00;
 }
 
 /* || UTILITY CLASSES */
@@ -144,6 +145,10 @@ a:focus-visible {
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
+}
+
+.dash-header__container--small {
+  max-width: 800px;
 }
 
 .dash-header__nav {
@@ -284,8 +289,8 @@ tr {
 }
 
 .form__input--incomplete {
-  border: 1px solid red;
-  outline: 1px solid red;
+  border: 1px solid var(--INPUT-INVALID);
+  outline: 1px solid var(--INPUT-INVALID);
 }
 
 .form__checkbox {
