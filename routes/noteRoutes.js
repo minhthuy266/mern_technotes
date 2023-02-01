@@ -6,6 +6,9 @@ const {
   deleteNote,
 } = require("../controllers/noteController");
 const router = express.Router();
+const verifyJWT = require("../middleware/verifyJWT")
+
+router.use(verifyJWT)
 
 router
   .route("/")
