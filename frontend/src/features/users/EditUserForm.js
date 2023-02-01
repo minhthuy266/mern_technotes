@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ROLES } from "../../config/role";
 
-const USER_REGEX = /^[A-z]{3,20}$/;
+const USER_REGEX = "";
 const PWD_REGEX = /^[A-z0-9!@#$%]{4,12}$/;
 
 const EditUserForm = ({ user }) => {
@@ -19,16 +19,16 @@ const EditUserForm = ({ user }) => {
 
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState(user.username);
-  const [validUsername, setValidUsername] = useState(false);
+  const [username, setUsername] = useState(user?.username);
+  const [validUsername, setValidUsername] = useState(true);
   const [password, setPassword] = useState("");
   const [validPassword, setValidPassword] = useState(false);
-  const [roles, setRoles] = useState(user.roles);
-  const [active, setActive] = useState(user.active);
+  const [roles, setRoles] = useState(user?.roles);
+  const [active, setActive] = useState(user?.active);
 
-  useEffect(() => {
-    setValidUsername(USER_REGEX.test(username));
-  }, [username]);
+  // useEffect(() => {
+  //   setValidUsername(USER_REGEX.test(username));
+  // }, [username]);
 
   useEffect(() => {
     setValidPassword(PWD_REGEX.test(password));
@@ -59,14 +59,14 @@ const EditUserForm = ({ user }) => {
 
   const onSaveUserClicked = async (e) => {
     if (password) {
-      await updateUser({ id: user.id, username, password, roles, active });
+      await updateUser({ id: user?.id, username, password, roles, active });
     } else {
-      await updateUser({ id: user.id, username, roles, active });
+      await updateUser({ id: user?.id, username, roles, active });
     }
   };
 
   const onDeleteUserClicked = async () => {
-    await deleteUser({ id: user.id });
+    await deleteUser({ id: user?.id });
   };
 
   const options = Object.values(ROLES).map((role) => {
@@ -81,16 +81,17 @@ const EditUserForm = ({ user }) => {
   let canSave;
   if (password) {
     canSave =
-      [roles.length, validUsername, validPassword].every(Boolean) && !isLoading;
+      [roles?.length, validUsername, validPassword].every(Boolean) &&
+      !isLoading;
   } else {
-    canSave = [roles.length, validUsername].every(Boolean) && !isLoading;
+    canSave = [roles?.length, validUsername].every(Boolean) && !isLoading;
   }
 
   const errClass = isError || isDelError ? "errmsg" : "offscreen";
   const validUserClass = !validUsername ? "form__input--incomplete" : "";
   const validPwdClass =
     password && !validPassword ? "form__input--incomplete" : "";
-  const validRolesClass = !Boolean(roles.length)
+  const validRolesClass = !Boolean(roles?.length)
     ? "form__input--incomplete"
     : "";
 

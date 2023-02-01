@@ -8,7 +8,11 @@ const UsersList = () => {
     isSuccess,
     isError,
     error,
-  } = useGetUsersQuery();
+  } = useGetUsersQuery(undefined, {
+    pollingInterval: 60000,
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+  });
 
   let content;
 
@@ -20,8 +24,6 @@ const UsersList = () => {
 
   if (isSuccess) {
     const { ids } = users;
-
-    console.log("object", users);
 
     const tableContent = ids?.length
       ? ids.map((userId) => <User key={userId} userId={userId} />)
