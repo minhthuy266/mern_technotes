@@ -1,15 +1,16 @@
-const User = require("../models/User");
 const Note = require("../models/Note");
-const asyncHandler = require("express-async-handler");
+const User = require("../models/User");
 
 // @desc Get all notes
 // @route GET /notes
 // @access Private
-
-const getAllNotes = asyncHandler(async (req, res) => {
+const getAllNotes = async (req, res) => {
+  // Get all notes from MongoDB
   const notes = await Note.find().lean();
-  if (!notes.length) {
-    return res.status(404).json({ message: "No notes found" });
+
+  // If no notes
+  if (!notes?.length) {
+    return res.status(400).json({ message: "No notes found" });
   }
 
   // Add username to each note before sending the response
@@ -18,73 +19,70 @@ const getAllNotes = asyncHandler(async (req, res) => {
   const notesWithUser = await Promise.all(
     notes.map(async (note) => {
       const user = await User.findById(note.user).lean().exec();
-
-      return { ...note, username: user?.username };
+      return { ...note, username: user.username };
     })
   );
 
   res.json(notesWithUser);
-});
+};
 
-// @desc Create a new note
+// @desc Create new note
 // @route POST /notes
 // @access Private
-
-const createNewNote = asyncHandler(async (req, res) => {
+const createNewNote = async (req, res) => {
   const { user, title, text } = req.body;
 
   // Confirm data
   if (!user || !title || !text) {
-    return res.status(404).json({ message: "All fields are required" });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
-  //   Check if user already
-  const duplicate = await Note.findOne({ title }).lean().exec();
+  // Check for duplicate title
+  const duplicate = await Note.findOne({ title })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   if (duplicate) {
     return res.status(409).json({ message: "Duplicate note title" });
   }
 
-  //   Create and store note
+  // Create and store the new user
   const note = await Note.create({ user, title, text });
 
   if (note) {
-    res.status(201).json({ message: `New note created` });
+    // Created
+    return res.status(201).json({ message: "New note created" });
   } else {
-    res.status(404).json({ message: "Invalid user data received" });
+    return res.status(400).json({ message: "Invalid note data received" });
   }
-});
+};
 
 // @desc Update a note
 // @route PATCH /notes
 // @access Private
-
-const updateNote = asyncHandler(async (req, res) => {
+const updateNote = async (req, res) => {
   const { id, user, title, text, completed } = req.body;
 
   // Confirm data
-
   if (!id || !user || !title || !text || typeof completed !== "boolean") {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Confirm note exists to update
-
   const note = await Note.findById(id).exec();
 
   if (!note) {
     return res.status(400).json({ message: "Note not found" });
   }
 
-  //   Check for duplicate
+  // Check for duplicate title
+  const duplicate = await Note.findOne({ title })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
-  const duplicate = await Note.findOne({ title }).lean().exec();
-
-  //   The lean option tells Mongoose to skip hydrating the result documents. This makes queries faster and less memory intensive, but the result documents are plain old JavaScript objects (POJOs)
-  //    To queries work like a promise we use the exec function.
-
-  // Allow updates to the original user
-
+  // Allow renaming of the original note
   if (duplicate && duplicate?._id.toString() !== id) {
     return res.status(409).json({ message: "Duplicate note title" });
   }
@@ -96,21 +94,21 @@ const updateNote = asyncHandler(async (req, res) => {
 
   const updatedNote = await note.save();
 
-  res.json({ message: `${updatedNote.title} updated` });
-});
+  res.json(`'${updatedNote.title}' updated`);
+};
 
-// @desc Delete a user
-// @route DELETE /users
+// @desc Delete a note
+// @route DELETE /notes
 // @access Private
-
-const deleteNote = asyncHandler(async (req, res) => {
+const deleteNote = async (req, res) => {
   const { id } = req.body;
 
+  // Confirm data
   if (!id) {
-    return res.status(400).json({ message: "Note ID is required" });
+    return res.status(400).json({ message: "Note ID required" });
   }
 
-  // Confirm note exits to delete
+  // Confirm note exists to delete
   const note = await Note.findById(id).exec();
 
   if (!note) {
@@ -119,10 +117,10 @@ const deleteNote = asyncHandler(async (req, res) => {
 
   const result = await note.deleteOne();
 
-  const reply = `Note ${result.title} with ID ${result._id} deleted`;
+  const reply = `Note '${result.title}' with ID ${result._id} deleted`;
 
   res.json(reply);
-});
+};
 
 module.exports = {
   getAllNotes,
